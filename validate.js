@@ -1,6 +1,6 @@
 // Client-side validation. It mirrors server/src/validate.js so people get instant feedback,
 // but the server always re-checks everything - this file is a convenience, not a security layer.
-import { SERVICE_OPTIONS } from '../config/site.js';
+import { SERVICE_OPTIONS } from './config.js';
 
 export const LIMITS = { nameMin: 2, nameMax: 80, emailMax: 254, messageMin: 10, messageMax: 2000 };
 

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 /** Loads ROOT/.env into process.env (hosting dashboards inject variables themselves, so a missing file is fine). */
 export function loadEnvFile() {

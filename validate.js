@@ -58,4 +58,26 @@ export function validateAll(values) {
     if (message) errors[field] = message;
   }
   return errors;
+}export function validateEnquiry(body) {
+  const values = {
+    name: body?.name,
+    phone: body?.phone,
+    email: body?.email,
+    service: body?.service,
+    message: body?.message,
+  };
+
+  const errors = validateAll(values);
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+    data: {
+      name: String(values.name ?? '').trim(),
+      phone: String(values.phone ?? '').trim(),
+      email: String(values.email ?? '').trim(),
+      service: String(values.service ?? '').trim(),
+      message: String(values.message ?? '').trim(),
+    },
+  };
 }

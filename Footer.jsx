@@ -1,5 +1,5 @@
 import { Mail, Phone } from 'lucide-react';
-import { COMPANY } from '../config/site.js';
+import { COMPANY } from './config.js';
 import { InstagramIcon } from './Icons.jsx';
 import Logo from './Logo.jsx';
 

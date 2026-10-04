@@ -1,0 +1,23 @@
+# Optional: Render "Blueprint". Lets you create the whole service from this file.
+# Secrets (sync: false) are typed into the Render dashboard, never stored here.
+services:
+  - type: web
+    name: ekadanta-traders
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: ENQUIRY_RECIPIENT
+        value: ekadantatraders.0208@gmail.com
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false

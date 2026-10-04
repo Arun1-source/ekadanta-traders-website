@@ -1,4 +1,4 @@
-import { SERVICES } from './config.js';
+import { SERVICES } from './site.js';
 import ServiceCard from './ServiceCard.jsx';
 
 export default function Services({ onEnquire }) {

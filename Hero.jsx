@@ -1,5 +1,5 @@
 import { Phone } from 'lucide-react';
-import { COMPANY } from './config.js';
+import { COMPANY } from './site.js';
 import HeroArt from './HeroArt.jsx';
 
 const delay = (ms) => ({ animationDelay: `${ms}ms` });

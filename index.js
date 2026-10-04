@@ -23,7 +23,7 @@ const handler = createApp({
   limiter,
   adminLimiter,
   globalLimiter,
-  clientDir: path.join(ROOT_DIR, 'client', 'dist'),
+  clientDir: path.join(ROOT_DIR, 'dist'),
 });
 
 const server = http.createServer(handler);

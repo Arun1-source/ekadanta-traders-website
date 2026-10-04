@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
-import Contact from 'Contact.jsx';
-import Footer from 'Footer.jsx';
-import Header from 'Header.jsx';
-import Hero from 'Hero.jsx';
-import Services from 'Services.jsx';
-import WhatsAppFloat from 'WhatsAppFloat.jsx';
+import Contact from './Contact.jsx';
+import Footer from './Footer.jsx';
+import Header from './Header.jsx';
+import Hero from './Hero.jsx';
+import Services from './Services.jsx';
+import WhatsAppFloat from './WhatsAppFloat.jsx';
 
 export default function App() {
   // Every "ENQUIRE NOW" button calls openEnquiry(). The form listens to `request`,

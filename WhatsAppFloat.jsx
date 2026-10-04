@@ -1,4 +1,4 @@
-import { COMPANY, WHATSAPP_URL } from './config/site.js';
+import { COMPANY, WHATSAPP_URL } from './config.js';
 import { WhatsAppIcon } from './Icons.jsx';
 
 export default function WhatsAppFloat() {

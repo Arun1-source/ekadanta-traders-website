@@ -1,5 +1,5 @@
 import { Mail, Phone } from 'lucide-react';
-import { COMPANY, WHATSAPP_URL } from './config.js';
+import { COMPANY, WHATSAPP_URL } from './site.js';
 import EnquiryForm from './EnquiryForm.jsx';
 import { InstagramIcon, WhatsAppIcon } from './Icons.jsx';
 

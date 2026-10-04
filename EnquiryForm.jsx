@@ -1,8 +1,8 @@
 import { AlertCircle, CheckCircle2, ChevronDown, Loader2, Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { COMPANY, SERVICE_OPTIONS } from './config.js';
-import { submitEnquiry } from '../lib/api.js';
-import { FIELDS, LIMITS, validateAll, validateField } from '../lib/validate.js';
+import { submitEnquiry } from './api.js';
+import { FIELDS, LIMITS, validateAll, validateField } from './validate.js';
 import Turnstile, { TURNSTILE_ENABLED } from './Turnstile.jsx';
 
 const EMPTY = { name: '', phone: '', email: '', service: '', message: '' };

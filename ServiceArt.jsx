@@ -2,7 +2,7 @@
 // To use your own photographs, see "Replacing the artwork with real photos" in README.md.
 
 const Frame = ({ id, from, to, children }) => (
-  <svg viewBox="0 0 480 300" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden="true" focusable="false">
+<svg viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor={from} />

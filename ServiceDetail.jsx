@@ -121,8 +121,7 @@ export default function ServiceDetail({ service, onBack, onEnquire }) {
           }}
         />
       </div>
-
-      <div className="relative mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:px-8">
+<div className="relative mx-auto max-w-7xl px-5 pt-28 pb-8 sm:px-6 sm:pt-32 lg:px-8"> 
         {/* Back button */}
         <button
           type="button"

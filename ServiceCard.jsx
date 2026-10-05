@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   Building2,
   Car,
@@ -6,11 +5,7 @@ import {
   Ship,
   Wrench,
   Zap,
-  ChevronLeft,
-  ChevronRight,
-  Play,
 } from 'lucide-react';
-import ServiceArt from './ServiceArt.jsx';
 
 const ICONS = {
   Building2,
@@ -21,12 +16,14 @@ const ICONS = {
   Car,
 };
 
-const PROPERTY_VIDEOS = [
-  '/property_video_01.mp4',
-  '/property_video_02.mp4',
-  '/property_video_03.mp4',
-  '/property_video_04.mp4',
-];
+const SERVICE_IMAGES = {
+  'Property Sale & Purchase': '/property-sale-purchase.jpg',
+  'Import & Export': '/import-export.jpg',
+  Construction: '/construction.jpg',
+  'Utility Services': '/utility-services.jpg',
+  'Contractor Services': '/contractor-services.jpg',
+  'Car Sale & Purchase': '/car-sale-purchase.jpg',
+};
 
 export default function ServiceCard({
   service,
@@ -34,38 +31,7 @@ export default function ServiceCard({
   onOpenService,
 }) {
   const Icon = ICONS[service.icon] ?? Building2;
-  const isProperty = service.title === 'Property Sale & Purchase';
-  const [currentVideo, setCurrentVideo] = useState(0);
-
-  useEffect(() => {
-    if (!isProperty) return;
-
-    const timer = setInterval(() => {
-      setCurrentVideo(
-        (current) => (current + 1) % PROPERTY_VIDEOS.length
-      );
-    }, 7000);
-
-    return () => clearInterval(timer);
-  }, [isProperty]);
-
-  const previousVideo = (event) => {
-    event.stopPropagation();
-
-    setCurrentVideo(
-      (current) =>
-        (current - 1 + PROPERTY_VIDEOS.length) %
-        PROPERTY_VIDEOS.length
-    );
-  };
-
-  const nextVideo = (event) => {
-    event.stopPropagation();
-
-    setCurrentVideo(
-      (current) => (current + 1) % PROPERTY_VIDEOS.length
-    );
-  };
+  const image = SERVICE_IMAGES[service.title];
 
   const handleOpenService = () => {
     onOpenService?.(service);
@@ -92,80 +58,33 @@ export default function ServiceCard({
       tabIndex={0}
       aria-label={`View ${service.title} details`}
     >
+      {/* SERVICE IMAGE */}
       <div className="relative aspect-[16/10] overflow-hidden">
-        {isProperty ? (
-          <>
-            <video
-              key={PROPERTY_VIDEOS[currentVideo]}
-              src={PROPERTY_VIDEOS[currentVideo]}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
+        <img
+          src={image}
+          alt={service.title}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          loading="lazy"
+        />
 
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/10 to-transparent" />
+        {/* Dark overlay for premium look */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/15 to-transparent"
+          aria-hidden="true"
+        />
 
-            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-navy-950/75 px-3 py-1.5 text-xs font-medium text-gold-300 backdrop-blur">
-              <Play className="h-3.5 w-3.5 fill-current" />
-              PROPERTY
-            </div>
+        {/* Service icon */}
+        <span className="absolute bottom-4 left-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gold-500/50 bg-navy-950/80 text-gold-300 backdrop-blur">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </span>
 
-            <button
-              type="button"
-              onClick={previousVideo}
-              className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-navy-950/70 text-pearl backdrop-blur transition hover:border-gold-400 hover:text-gold-300"
-              aria-label="Previous property video"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={nextVideo}
-              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-navy-950/70 text-pearl backdrop-blur transition hover:border-gold-400 hover:text-gold-300"
-              aria-label="Next property video"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-              {PROPERTY_VIDEOS.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setCurrentVideo(index);
-                  }}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentVideo
-                      ? 'w-6 bg-gold-400'
-                      : 'w-2 bg-white/40 hover:bg-white/70'
-                  }`}
-                  aria-label={`Show property video ${index + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <ServiceArt id={service.id} />
-
-            <div
-              className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-navy-950/90 to-transparent"
-              aria-hidden="true"
-            />
-
-            <span className="absolute bottom-3 left-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gold-500/50 bg-navy-950/80 text-gold-300">
-              <Icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-          </>
-        )}
+        {/* View more label */}
+        <span className="absolute right-4 bottom-4 rounded-full border border-gold-500/40 bg-navy-950/80 px-3 py-1.5 text-xs font-medium tracking-wide text-gold-300 backdrop-blur">
+          VIEW MORE →
+        </span>
       </div>
 
+      {/* CONTENT */}
       <div className="flex flex-1 flex-col p-6">
         <h3 className="font-display text-2xl leading-snug text-pearl">
           {service.title}

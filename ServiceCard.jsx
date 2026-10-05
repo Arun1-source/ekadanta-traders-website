@@ -59,7 +59,7 @@ export default function ServiceCard({
       aria-label={`View ${service.title} details`}
     >
       {/* SERVICE IMAGE */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+     <div className="relative aspect-[16/9] overflow-hidden">
         <img
           src={image}
           alt={service.title}

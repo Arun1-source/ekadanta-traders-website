@@ -1,52 +1,141 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-const initialReviews = [
-  {
-    name: 'Rahul',
-    rating: 5,
-    message: 'Excellent service and professional dealing.',
-  },
-  {
-    name: 'Aman',
-    rating: 5,
-    message: 'Very smooth experience with EKADANTA TRADERS.',
-  },
-];
+const Star = ({ value, size = 'text-2xl', interactive = false, selectedRating, onRate }) => {
+  const fill = Math.max(0, Math.min(1, selectedRating - value + 1));
+
+  return (
+    <button
+      type="button"
+      disabled={!interactive}
+      onClick={(event) => {
+        if (!interactive || !onRate) return;
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const isHalf = event.clientX - rect.left < rect.width / 2;
+        onRate(value - (isHalf ? 0.5 : 0));
+      }}
+      className={`${size} leading-none ${
+        interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''
+      }`}
+      aria-label={`${value - 0.5} to ${value} star rating`}
+    >
+      <span
+        className="text-transparent bg-clip-text"
+        style={{
+          backgroundImage: `linear-gradient(
+            90deg,
+            #d8ad45 ${fill * 100}%,
+            rgba(255,255,255,0.2) ${fill * 100}%
+          )`,
+        }}
+      >
+        ★
+      </span>
+    </button>
+  );
+};
+
+const Stars = ({ rating, interactive = false, onRate }) => (
+  <div className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map((value) => (
+      <Star
+        key={value}
+        value={value}
+        interactive={interactive}
+        selectedRating={rating}
+        onRate={onRate}
+      />
+    ))}
+  </div>
+);
 
 export default function Reviews() {
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
   const [rating, setRating] = useState(5);
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const averageRating = useMemo(() => {
-    if (!reviews.length) return '0.0';
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
 
-    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-    return (total / reviews.length).toFixed(1);
-  }, [reviews]);
+      const response = await fetch('/api/reviews');
+      const data = await response.json();
 
-  const handleSubmit = (event) => {
+      if (!response.ok || !data.ok) {
+        throw new Error('Unable to load reviews');
+      }
+
+      setReviews(data.reviews || []);
+      setAverageRating(Number(data.averageRating || 0));
+    } catch {
+      setReviews([]);
+      setAverageRating(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
+  const reviewCount = reviews.length;
+
+  const displayedAverage = useMemo(() => {
+    return Number(averageRating || 0).toFixed(1);
+  }, [averageRating]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name.trim() || !message.trim()) return;
 
-    setReviews((current) => [
-      {
-        name: name.trim(),
-        rating,
-        message: message.trim(),
-      },
-      ...current,
-    ]);
+    setSubmitting(true);
+    setSubmitted(false);
+    setError('');
 
-    setName('');
-    setMessage('');
-    setRating(5);
-    setSubmitted(true);
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          rating,
+          message: message.trim(),
+        }),
+      });
 
-    setTimeout(() => setSubmitted(false), 3000);
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Unable to submit review');
+      }
+
+      setName('');
+      setMessage('');
+      setRating(5);
+      setSubmitted(true);
+
+      await loadReviews();
+
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 4000);
+    } catch {
+      setError(
+        'Your review could not be submitted right now. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -67,22 +156,24 @@ export default function Reviews() {
 
           <p className="mt-4 text-white/65">
             Your experience matters to EKADANTA TRADERS.
+            <br />
             Share your experience with us.
           </p>
         </div>
 
-        {/* Rating summary */}
-        <div className="mb-12 flex flex-col items-center justify-center rounded-2xl border border-[#d8ad45]/25 bg-[#111c2e] px-6 py-8 text-center shadow-xl">
+        {/* Rating Summary */}
+        <div className="mx-auto mb-12 flex max-w-md flex-col items-center justify-center rounded-2xl border border-[#d8ad45]/25 bg-[#111c2e] px-6 py-8 text-center shadow-xl">
           <div className="text-5xl font-semibold text-[#d8ad45]">
-            {averageRating}
+            {displayedAverage}
           </div>
 
-          <div className="mt-2 text-2xl tracking-[0.15em] text-[#d8ad45]">
-            ★★★★★
+          <div className="mt-3">
+            <Stars rating={averageRating} />
           </div>
 
-          <p className="mt-2 text-sm text-white/55">
-            Based on {reviews.length} customer reviews
+          <p className="mt-3 text-sm text-white/55">
+            Based on {reviewCount} customer{' '}
+            {reviewCount === 1 ? 'review' : 'reviews'}
           </p>
         </div>
 
@@ -93,34 +184,39 @@ export default function Reviews() {
               Customer Experiences
             </h3>
 
-            <div className="space-y-4">
-              {reviews.map((review, index) => (
-                <article
-                  key={`${review.name}-${index}`}
-                  className="rounded-2xl border border-white/10 bg-[#111c2e] p-6"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="font-semibold text-white">
-                      {review.name}
-                    </h4>
+            {loading ? (
+              <div className="rounded-2xl border border-white/10 bg-[#111c2e] p-6 text-white/55">
+                Loading reviews...
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-[#111c2e] p-6 text-white/55">
+                No reviews yet. Be the first to share your experience.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <article
+                    key={review.id || `${review.name}-${review.created_at}`}
+                    className="rounded-2xl border border-white/10 bg-[#111c2e] p-6"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <h4 className="font-semibold text-white">
+                        {review.name}
+                      </h4>
 
-                    <div className="text-[#d8ad45]">
-                      {'★'.repeat(review.rating)}
-                      <span className="text-white/20">
-                        {'★'.repeat(5 - review.rating)}
-                      </span>
+                      <Stars rating={Number(review.rating)} />
                     </div>
-                  </div>
 
-                  <p className="mt-3 leading-7 text-white/65">
-                    “{review.message}”
-                  </p>
-                </article>
-              ))}
-            </div>
+                    <p className="mt-3 leading-7 text-white/65">
+                      {review.message}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Review form */}
+          {/* Review Form */}
           <div className="rounded-2xl border border-[#d8ad45]/20 bg-[#111c2e] p-6 md:p-8">
             <h3 className="font-serif text-2xl">
               Rate Your Experience
@@ -131,29 +227,23 @@ export default function Reviews() {
             </p>
 
             <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-              {/* Stars */}
+              {/* Rating */}
               <div>
                 <label className="mb-3 block text-sm text-white/70">
                   Your Rating
                 </label>
 
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      className={`text-3xl transition ${
-                        star <= rating
-                          ? 'text-[#d8ad45]'
-                          : 'text-white/20'
-                      } hover:scale-110`}
-                      aria-label={`${star} star rating`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
+                <Stars
+                  rating={rating}
+                  interactive
+                  onRate={(value) => {
+                    if (value >= 0.5) setRating(value);
+                  }}
+                />
+
+                <p className="mt-2 text-sm text-[#d8ad45]">
+                  {rating.toFixed(1)} / 5
+                </p>
               </div>
 
               {/* Name */}
@@ -168,6 +258,7 @@ export default function Reviews() {
                   onChange={(event) => setName(event.target.value)}
                   placeholder="Enter your name"
                   required
+                  maxLength={80}
                   className="w-full rounded-xl border border-white/10 bg-[#07101f] px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-[#d8ad45]"
                 />
               </div>
@@ -184,20 +275,30 @@ export default function Reviews() {
                   placeholder="Tell us about your experience..."
                   rows={5}
                   required
+                  maxLength={1000}
                   className="w-full resize-none rounded-xl border border-white/10 bg-[#07101f] px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-[#d8ad45]"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-[#d8ad45] px-6 py-3 font-semibold text-[#07101f] transition hover:brightness-110"
+                disabled={submitting}
+                className="w-full rounded-xl bg-[#d8ad45] px-6 py-3 font-semibold text-[#07101f] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Submit Review
+                {submitting ? 'Submitting...' : 'Submit Review'}
               </button>
 
               {submitted && (
                 <p className="text-center text-sm text-[#d8ad45]">
                   Thank you for your review! ⭐
+                  <br />
+                  Your review will appear after approval.
+                </p>
+              )}
+
+              {error && (
+                <p className="text-center text-sm text-red-400">
+                  {error}
                 </p>
               )}
             </form>

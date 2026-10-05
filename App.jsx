@@ -31,6 +31,7 @@ export default function App() {
 
   const openService = useCallback((service) => {
     setSelectedService(service);
+
     window.scrollTo({
       top: 0,
       behavior: 'smooth',

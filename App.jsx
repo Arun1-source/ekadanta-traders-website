@@ -1,3 +1,4 @@
+import Reviews from './Reviews.jsx';
 import { useCallback, useState } from 'react';
 import Contact from './Contact.jsx';
 import Footer from './Footer.jsx';
@@ -79,6 +80,7 @@ export default function App() {
             />
 
             <Contact request={request} />
+            <Reviews />
           </>
         )}
       </main>

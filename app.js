@@ -196,7 +196,245 @@ export function createApp({ config, mailer, store, limiter, adminLimiter, global
     const limit = Number(new URL(req.url, 'http://localhost').searchParams.get('limit')) || 100;
     return sendJson(res, 200, { ok: true, storage: store.enabled, enquiries: store.list(limit) });
   }
+  function validateReview(body) {
+    const name = typeof body?.name === 'string' ? body.name.trim() : '';
+    const message = typeof body?.message === 'string' ? body.message.trim() : '';
+    const rating = Number(body?.rating);
 
+    const errors = {};
+
+    if (!name || name.length < 2 || name.length > 80) {
+      errors.name = 'Name must be between 2 and 80 characters.';
+    }
+
+    if (!message || message.length < 5 || message.length > 1000) {
+      errors.message = 'Review must be between 5 and 1000 characters.';
+    }
+
+    if (
+      !Number.isFinite(rating) ||
+      rating < 0.5 ||
+      rating > 5 ||
+      Math.round(rating * 2) !== rating * 2
+    ) {
+      errors.rating = 'Rating must be between 0.5 and 5 in 0.5 steps.';
+    }
+
+    return {
+      valid: Object.keys(errors).length === 0,
+      errors,
+      data: { name, rating, message },
+    };
+  }
+
+  async function handleReviews(req, res, ip) {
+    if (req.method === 'GET') {
+      const reviews = store.listReviews({
+        approvedOnly: true,
+        limit: 100,
+      });
+
+      const total = reviews.reduce(
+        (sum, review) => sum + Number(review.rating),
+        0,
+      );
+
+      const average = reviews.length
+        ? Number((total / reviews.length).toFixed(1))
+        : 0;
+
+      return sendJson(res, 200, {
+        ok: true,
+        reviews,
+        summary: {
+          average,
+          count: reviews.length,
+        },
+      });
+    }
+
+    if (req.method !== 'POST') {
+      return sendJson(
+        res,
+        405,
+        { ok: false, error: 'method_not_allowed' },
+        { Allow: 'GET, POST, OPTIONS' },
+      );
+    }
+
+    const perVisitor = limiter.consume(`review:${ip}`);
+    const overall = globalLimiter.consume('all');
+
+    if (!perVisitor.allowed || !overall.allowed) {
+      const retryAfterSec =
+        perVisitor.retryAfterSec ?? overall.retryAfterSec;
+
+      log('review_rate_limited', { ip });
+
+      return sendJson(
+        res,
+        429,
+        { ok: false, error: 'rate_limited' },
+        { 'Retry-After': String(retryAfterSec) },
+      );
+    }
+
+    const body = await readJsonBody(req);
+
+    if (
+      typeof body?.website === 'string' &&
+      body.website.trim() !== ''
+    ) {
+      log('review_honeypot', { ip });
+      return sendJson(res, 400, {
+        ok: false,
+        error: 'invalid_request',
+      });
+    }
+
+    const { valid, errors, data } = validateReview(body);
+
+    if (!valid) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: 'validation_failed',
+        fields: errors,
+      });
+    }
+
+    try {
+      const id = store.createReview(data);
+
+      log('review_submitted', {
+        id,
+        rating: data.rating,
+      });
+
+      return sendJson(res, 201, {
+        ok: true,
+        message: 'Review submitted for approval.',
+      });
+    } catch (err) {
+      log('review_store_failed', {
+        reason: err.message,
+      });
+
+      return sendJson(res, 500, {
+        ok: false,
+        error: 'review_store_failed',
+      });
+    }
+  }
+
+  function isAdminAuthorized(req) {
+    if (!config.adminToken) return false;
+
+    const supplied = String(
+      req.headers.authorization ?? '',
+    ).replace(/^Bearer\s+/i, '');
+
+    const a = crypto
+      .createHash('sha256')
+      .update(supplied)
+      .digest();
+
+    const b = crypto
+      .createHash('sha256')
+      .update(config.adminToken)
+      .digest();
+
+    return crypto.timingSafeEqual(a, b);
+  }
+
+  function handleAdminReviews(req, res, ip) {
+    if (!config.adminToken) {
+      return sendJson(res, 404, {
+        ok: false,
+        error: 'not_found',
+      });
+    }
+
+    if (!adminLimiter.consume(ip).allowed) {
+      return sendJson(res, 429, {
+        ok: false,
+        error: 'rate_limited',
+      });
+    }
+
+    if (!isAdminAuthorized(req)) {
+      return sendJson(res, 401, {
+        ok: false,
+        error: 'unauthorized',
+      });
+    }
+
+    const limit =
+      Number(
+        new URL(req.url, 'http://localhost')
+          .searchParams.get('limit'),
+      ) || 100;
+
+    return sendJson(res, 200, {
+      ok: true,
+      storage: store.enabled,
+      reviews: store.listReviews({
+        approvedOnly: false,
+        limit,
+      }),
+    });
+  }
+
+  async function handleAdminReviewStatus(req, res, ip, id) {
+    if (!config.adminToken) {
+      return sendJson(res, 404, {
+        ok: false,
+        error: 'not_found',
+      });
+    }
+
+    if (!adminLimiter.consume(ip).allowed) {
+      return sendJson(res, 429, {
+        ok: false,
+        error: 'rate_limited',
+      });
+    }
+
+    if (!isAdminAuthorized(req)) {
+      return sendJson(res, 401, {
+        ok: false,
+        error: 'unauthorized',
+      });
+    }
+
+    const body = await readJsonBody(req);
+    const status = body?.status;
+
+    if (!['approved', 'rejected', 'pending'].includes(status)) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: 'invalid_status',
+      });
+    }
+
+    const updated = store.setReviewStatus(id, status);
+
+    if (!updated) {
+      return sendJson(res, 404, {
+        ok: false,
+        error: 'review_not_found',
+      });
+    }
+
+    log('review_status_changed', {
+      id: Number(id),
+      status,
+    });
+
+    return sendJson(res, 200, {
+      ok: true,
+      status,
+    });
+  }
   function serveStatic(req, res, pathname) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendJson(res, 405, { ok: false, error: 'method_not_allowed' });
 
@@ -257,7 +495,7 @@ export function createApp({ config, mailer, store, limiter, adminLimiter, global
 
         if (req.method === 'OPTIONS') {
           res.writeHead(204, {
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+           'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '600',
           });
@@ -270,6 +508,31 @@ export function createApp({ config, mailer, store, limiter, adminLimiter, global
         if (pathname === '/api/contact') {
           if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'POST, OPTIONS' });
           return await handleContact(req, res, ip);
+        }      
+        if (pathname === '/api/reviews') {
+          return await handleReviews(req, res, ip);
+        }
+
+        if (
+          pathname === '/api/admin/reviews' &&
+          req.method === 'GET'
+        ) {
+          return handleAdminReviews(req, res, ip);
+        }
+
+        const adminReviewMatch =
+          pathname.match(/^\/api\/admin\/reviews\/(\d+)$/);
+
+        if (
+          adminReviewMatch &&
+          req.method === 'PATCH'
+        ) {
+          return await handleAdminReviewStatus(
+            req,
+            res,
+            ip,
+            adminReviewMatch[1],
+          );
         }
         if (pathname === '/api/admin/enquiries' && req.method === 'GET') return handleAdminList(req, res, ip);
         return sendJson(res, 404, { ok: false, error: 'not_found' });

@@ -1,8 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Building2, Car, HardHat, Ship, Wrench, Zap, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import {
+  Building2,
+  Car,
+  HardHat,
+  Ship,
+  Wrench,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+} from 'lucide-react';
 import ServiceArt from './ServiceArt.jsx';
 
-const ICONS = { Building2, Ship, HardHat, Zap, Wrench, Car };
+const ICONS = {
+  Building2,
+  Ship,
+  HardHat,
+  Zap,
+  Wrench,
+  Car,
+};
 
 const PROPERTY_VIDEOS = [
   '/property_video_01.mp4',
@@ -11,46 +28,77 @@ const PROPERTY_VIDEOS = [
   '/property_video_04.mp4',
 ];
 
-export default function ServiceCard({ service, onEnquire }) {
+export default function ServiceCard({
+  service,
+  onEnquire,
+  onOpenService,
+}) {
   const Icon = ICONS[service.icon] ?? Building2;
   const isProperty = service.title === 'Property Sale & Purchase';
-
   const [currentVideo, setCurrentVideo] = useState(0);
 
   useEffect(() => {
     if (!isProperty) return;
 
     const timer = setInterval(() => {
-      setCurrentVideo((current) => (current + 1) % PROPERTY_VIDEOS.length);
+      setCurrentVideo(
+        (current) => (current + 1) % PROPERTY_VIDEOS.length
+      );
     }, 7000);
 
     return () => clearInterval(timer);
   }, [isProperty]);
 
-  const previousVideo = () => {
+  const previousVideo = (event) => {
+    event.stopPropagation();
+
     setCurrentVideo(
       (current) =>
-        (current - 1 + PROPERTY_VIDEOS.length) % PROPERTY_VIDEOS.length
+        (current - 1 + PROPERTY_VIDEOS.length) %
+        PROPERTY_VIDEOS.length
     );
   };
 
-  const nextVideo = () => {
+  const nextVideo = (event) => {
+    event.stopPropagation();
+
     setCurrentVideo(
       (current) => (current + 1) % PROPERTY_VIDEOS.length
     );
   };
 
+  const handleOpenService = () => {
+    onOpenService?.(service);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleOpenService();
+    }
+  };
+
+  const handleEnquire = (event) => {
+    event.stopPropagation();
+    onEnquire(service.title);
+  };
+
   return (
-    <article className="glass group flex h-full flex-col overflow-hidden rounded-2xl transition-colors duration-300 hover:border-gold-400/60">
-
+    <article
+      className="glass group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/60 hover:shadow-xl"
+      onClick={handleOpenService}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${service.title} details`}
+    >
       <div className="relative aspect-[16/10] overflow-hidden">
-
         {isProperty ? (
           <>
             <video
               key={PROPERTY_VIDEOS[currentVideo]}
               src={PROPERTY_VIDEOS[currentVideo]}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               autoPlay
               muted
               loop
@@ -58,7 +106,7 @@ export default function ServiceCard({ service, onEnquire }) {
               preload="metadata"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/10 to-transparent pointer-events-none" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/10 to-transparent" />
 
             <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-navy-950/75 px-3 py-1.5 text-xs font-medium text-gold-300 backdrop-blur">
               <Play className="h-3.5 w-3.5 fill-current" />
@@ -68,8 +116,8 @@ export default function ServiceCard({ service, onEnquire }) {
             <button
               type="button"
               onClick={previousVideo}
+              className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-navy-950/70 text-pearl backdrop-blur transition hover:border-gold-400 hover:text-gold-300"
               aria-label="Previous property video"
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-navy-950/70 p-2 text-white backdrop-blur transition hover:bg-navy-950"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -77,8 +125,8 @@ export default function ServiceCard({ service, onEnquire }) {
             <button
               type="button"
               onClick={nextVideo}
+              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-navy-950/70 text-pearl backdrop-blur transition hover:border-gold-400 hover:text-gold-300"
               aria-label="Next property video"
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-navy-950/70 p-2 text-white backdrop-blur transition hover:bg-navy-950"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -88,13 +136,16 @@ export default function ServiceCard({ service, onEnquire }) {
                 <button
                   key={index}
                   type="button"
-                  onClick={() => setCurrentVideo(index)}
-                  aria-label={`Show property video ${index + 1}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setCurrentVideo(index);
+                  }}
                   className={`h-2 rounded-full transition-all ${
                     index === currentVideo
-                      ? 'w-7 bg-gold-400'
-                      : 'w-2 bg-white/60 hover:bg-white'
+                      ? 'w-6 bg-gold-400'
+                      : 'w-2 bg-white/40 hover:bg-white/70'
                   }`}
+                  aria-label={`Show property video ${index + 1}`}
                 />
               ))}
             </div>
@@ -127,7 +178,7 @@ export default function ServiceCard({ service, onEnquire }) {
         <button
           type="button"
           className="btn-outline mt-6 w-full"
-          onClick={() => onEnquire(service.title)}
+          onClick={handleEnquire}
           aria-label={`Enquire now about ${service.title}`}
         >
           ENQUIRE NOW

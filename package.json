@@ -1,24 +1,22 @@
 {
-  "name": "ekadanta-traders-client",
+  "name": "ekadanta-traders",
   "version": "1.0.0",
+  "description": "EKADANTA TRADERS business website with a real enquiry system (React + Tailwind frontend, Node.js backend, email delivery).",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "node index.js"
+    "install:client": "npm --prefix client install --include=dev",
+    "build": "npm run install:client && npm --prefix client run build",
+    "start": "node server/src/index.js",
+    "dev:server": "node --watch server/src/index.js",
+    "dev:client": "npm --prefix client run dev",
+    "test": "node --test \"server/test/*.test.js\"",
+    "check-email": "node server/scripts/check-email.js"
   },
   "dependencies": {
-    "lucide-react": "^0.454.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "vite": "^5.4.11"
+    "nodemailer": "^7.0.0"
   }
 }

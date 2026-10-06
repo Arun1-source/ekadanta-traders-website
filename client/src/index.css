@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-navy-950 font-body text-pearl antialiased;
+    min-width: 320px;
+  }
+  ::selection {
+    background: rgba(201, 162, 75, 0.35);
+  }
+  :focus-visible {
+    outline: 2px solid #e8ce85;
+    outline-offset: 3px;
+  }
+  select option {
+    background-color: #0b1424;
+    color: #f3f0e8;
+  }
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(201, 162, 75, 0.22);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  /* Subtle jaali (lattice) pattern, a quiet nod to Indian architecture. */
+  .jaali {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23c9a24b' stroke-width='1' opacity='0.5'%3E%3Cpath d='M36 4l10 14 14 10-14 10-10 14-10-14-14-10 14-10z'/%3E%3Ccircle cx='36' cy='28' r='4'/%3E%3Cpath d='M0 68l8-10M72 68l-8-10M0 4l8 10M72 4l-8 10'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 72px 72px;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-6 py-3 text-sm font-semibold tracking-wide text-navy-950 transition-colors duration-200 hover:bg-gold-300 disabled:cursor-not-allowed disabled:opacity-70;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gold-500/60 px-6 py-3 text-sm font-semibold tracking-wide text-gold-300 transition-colors duration-200 hover:border-gold-300 hover:bg-gold-500 hover:text-navy-950;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

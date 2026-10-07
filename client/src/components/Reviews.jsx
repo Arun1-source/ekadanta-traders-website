@@ -53,6 +53,52 @@ function Stars({ value, onChange, interactive = false }) {
     </div>
   );
 }
+      aria-label={`${value} out of 5 stars`}
+    >
+      {stars.map((star) => {
+        const fill = Math.max(0, Math.min(1, value - star + 1)) * 100;
+
+        const starContent = (
+          <span
+            className="relative inline-block text-2xl leading-none"
+            style={{ width: '1em', height: '1em' }}
+          >
+            <span className="absolute inset-0 text-gold-300">★</span>
+
+            <span
+              className="absolute inset-0 overflow-hidden text-gold-300"
+              style={{ width: `${fill}%` }}
+            >
+              ★
+            </span>
+          </span>
+        );
+
+        if (!interactive) {
+          return <span key={star}>{starContent}</span>;
+        }
+
+        return (
+          <span key={star} className="relative flex">
+            <button
+              type="button"
+              aria-label={`${star - 0.5} stars`}
+              onClick={() => onChange(star - 0.5)}
+              className="absolute left-0 top-0 z-10 h-full w-1/2 cursor-pointer opacity-0"
+            />
+            <button
+              type="button"
+              aria-label={`${star} stars`}
+              onClick={() => onChange(star)}
+              className="absolute right-0 top-0 z-10 h-full w-1/2 cursor-pointer opacity-0"
+            />
+            {starContent}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
   const [average, setAverage] = useState(0);

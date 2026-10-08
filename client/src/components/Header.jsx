@@ -7,7 +7,7 @@ const LINKS = [
   { href: '#contact', label: 'Contact' },
 ];
 
-export default function Header({ onEnquire }) {
+export default function Header({ onEnquire, onShowHome }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -26,6 +26,20 @@ export default function Header({ onEnquire }) {
   }, [open]);
 
   const close = () => setOpen(false);
+  const handleLogoClick = (event) => {
+    close();
+    if (window.location.pathname.startsWith('/services/')) {
+      event.preventDefault();
+      onShowHome('top');
+    }
+  };
+  const handleServicesClick = (event) => {
+    close();
+    if (window.location.pathname.startsWith('/services/')) {
+      event.preventDefault();
+      onShowHome('services');
+    }
+  };
 
   return (
     <header
@@ -35,11 +49,11 @@ export default function Header({ onEnquire }) {
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-        <Logo onClick={close} />
+        <Logo onClick={handleLogoClick} />
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
           {LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="text-sm font-medium text-mist transition-colors hover:text-gold-300">
+            <a key={link.href} href={link.href} onClick={link.href === '#services' ? handleServicesClick : close} className="text-sm font-medium text-mist transition-colors hover:text-gold-300">
               {link.label}
             </a>
           ))}
@@ -63,7 +77,7 @@ export default function Header({ onEnquire }) {
       {open && (
         <nav id="mobile-menu" className="mx-auto flex max-w-6xl flex-col gap-1 px-5 pb-5 md:hidden" aria-label="Mobile">
           {LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={close} className="rounded-lg px-3 py-3 text-base font-medium text-pearl hover:bg-white/5">
+            <a key={link.href} href={link.href} onClick={link.href === '#services' ? handleServicesClick : close} className="rounded-lg px-3 py-3 text-base font-medium text-pearl hover:bg-white/5">
               {link.label}
             </a>
           ))}

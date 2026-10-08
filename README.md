@@ -133,7 +133,7 @@ The simplest setup is **one service** that serves both the website and the API (
 5. Deploy, then open `https://<your-service>.onrender.com/api/health`. It should show `{"ok":true,"emailConfigured":true}`.
 6. Send a real enquiry from the live site.
 
-Notes: free Render services go to sleep when idle, so the first visit after a quiet period is slow. The enquiry database file lives on Render's temporary disk and is erased on each redeploy; the email in your inbox is the permanent record (add a persistent disk or a paid plan if you want the database to survive).
+Notes: Render Free web services spin down after inactivity, so the first visit after a quiet period is slow. Their filesystem is temporary: the SQLite database is lost on spin-down, restart, or redeploy, and Free web services cannot attach a persistent disk. For durable reviews and enquiry records, use a paid web service with a persistent disk and set `DATABASE_PATH` to a file under its mount path, or configure a managed database with a suitable retention plan. Do not use a temporary database as the only copy of an approved review.
 
 ### Option B: Your own VPS (Ubuntu) with Gmail SMTP
 
@@ -189,4 +189,4 @@ Website: shows the success text only when it receives 200 {ok:true}
 
 ### Replacing the artwork with real photos
 
-The hero and service pictures are illustrations drawn as SVG, so the site works with no image files. To use photographs: put them in `client/public/images/`, then in `client/src/components/ServiceCard.jsx` replace `<ServiceArt id={service.id} />` with `<img src={`/images/${service.id}.jpg`} alt="" className="h-full w-full object-cover" loading="lazy" />`, and in `Hero.jsx` replace `<HeroArt />` with a full-size `<img>` the same way.
+Service cards and service detail pages use the photographs in `client/public/images/` named for each service id (for example, `property.jpg` and `construction.jpg`). Keep a matching image for every id in `client/src/config/site.js`. The homepage hero still uses the built-in SVG illustration.

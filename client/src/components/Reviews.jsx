@@ -19,7 +19,7 @@ function Stars({ value, onChange, interactive = false }) {
             style={{ width: '1em', height: '1em' }}
           >
             {/* Empty/background star */}
-            <span className="absolute inset-0 text-gold-300">
+         <span className="absolute inset-0 text-white/20">
               ★
             </span>
 

@@ -1,4 +1,4 @@
-import { Building2, Car, HardHat, Ship, Wrench, Zap } from 'lucide-react';
+ import { Building2, Car, HardHat, Ship, Wrench, Zap } from 'lucide-react';
 import ServiceArt from './ServiceArt.jsx';
 
 const ICONS = { Building2, Ship, HardHat, Zap, Wrench, Car };
@@ -10,7 +10,7 @@ export default function ServiceCard({ service, onEnquire }) {
     <article className="glass group flex h-full flex-col overflow-hidden rounded-2xl transition-colors duration-300 hover:border-gold-400/60">
       <div className="relative aspect-[16/10] overflow-hidden">
        <img
-  src={`/images/${service.id}.jpg`}
+         src={`/images/${service.id}.jpg`}
   alt={service.title}
   className="h-full w-full object-cover"
   loading="lazy"

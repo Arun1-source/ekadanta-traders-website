@@ -111,7 +111,7 @@ export default function ServiceDetail({ service, onBack, onEnquire }) {
   };
 
   const handleEnquire = () => {
-    onEnquire(service.title);
+    onEnquire(service.title, true);
   };
 
   return (

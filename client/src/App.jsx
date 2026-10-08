@@ -39,14 +39,18 @@ function Website() {
     document.title = activeService ? `${activeService.title} | EKADANTA TRADERS` : BASE_TITLE;
   }, [activeService]);
 
-  const openEnquiry = useCallback((service = '') => {
+  const openEnquiry = useCallback((service = '', keepServicePage = false) => {
     setRequest((current) => ({ service, nonce: current.nonce + 1 }));
-    if (window.location.pathname !== '/' || window.location.hash !== '#contact') {
-      window.history.pushState({}, '', '/#contact');
+    if (keepServicePage && activeService) {
+      window.history.pushState({}, '', `/services/${activeService.id}#contact`);
+    } else {
+      if (window.location.pathname !== '/' || window.location.hash !== '#contact') {
+        window.history.pushState({}, '', '/#contact');
+      }
+      setActiveService(null);
     }
-    setActiveService(null);
     window.requestAnimationFrame(() => scrollTo('enquiry'));
-  }, []);
+  }, [activeService]);
 
   const openService = useCallback((service) => {
     window.history.pushState({}, '', `/services/${service.id}`);

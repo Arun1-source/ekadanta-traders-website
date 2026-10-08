@@ -6,8 +6,18 @@ export default function ServiceCard({ service, onEnquire, onView }) {
   const Icon = ICONS[service.icon] ?? Building2;
 
   return (
-    <article className="glass group flex h-full flex-col overflow-hidden rounded-2xl transition-colors duration-300 hover:border-gold-400/60">
-      <div className="relative aspect-[16/10] overflow-hidden bg-navy-900">
+    <article className="glass group relative flex h-full flex-col overflow-hidden rounded-2xl transition-colors duration-300 hover:border-gold-400/60">
+      {/* Make every part of the card open its service page. The action buttons stay above this link. */}
+      <a
+        href={`/services/${service.id}`}
+        onClick={(event) => {
+          event.preventDefault();
+          onView(service);
+        }}
+        className="absolute inset-0 z-10 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-400"
+        aria-label={`View details for ${service.title}`}
+      />
+      <div className="pointer-events-none relative aspect-[16/10] overflow-hidden bg-navy-900">
         <img
           src={`/images/${service.id}.jpg`}
           alt={`${service.title} service`}
@@ -21,12 +31,12 @@ export default function ServiceCard({ service, onEnquire, onView }) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
+      <div className="relative flex flex-1 flex-col p-6">
         <h3 className="font-display text-2xl leading-snug text-pearl">{service.title}</h3>
         <p className="mt-3 flex-1 text-[0.95rem] leading-relaxed text-mist">{service.description}</p>
         <button
           type="button"
-          className="btn-outline mt-6 w-full"
+          className="btn-outline relative z-20 mt-6 w-full"
           onClick={() => onView(service)}
           aria-label={`View details for ${service.title}`}
         >
@@ -34,7 +44,7 @@ export default function ServiceCard({ service, onEnquire, onView }) {
         </button>
         <button
           type="button"
-          className="btn-gold mt-3 w-full"
+          className="btn-gold relative z-20 mt-3 w-full"
           onClick={() => onEnquire(service.title)}
           aria-label={`Enquire now about ${service.title}`}
         >

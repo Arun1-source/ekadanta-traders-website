@@ -9,7 +9,12 @@ export default function ServiceCard({ service, onEnquire }) {
   return (
     <article className="glass group flex h-full flex-col overflow-hidden rounded-2xl transition-colors duration-300 hover:border-gold-400/60">
       <div className="relative aspect-[16/10] overflow-hidden">
-        <ServiceArt id={service.id} />
+       <img
+  src={`/images/${service.id}.jpg`}
+  alt={service.title}
+  className="h-full w-full object-cover"
+  loading="lazy"
+/>
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-navy-900/90 to-transparent" aria-hidden="true" />
         <span className="absolute bottom-3 left-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gold-500/50 bg-navy-950/80 text-gold-300">
           <Icon className="h-5 w-5" aria-hidden="true" />
